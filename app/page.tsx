@@ -385,6 +385,7 @@ export default function MinecraftServer() {
                         size="lg"
                         variant="outline"
                         className="border-gray-600 text-white hover:bg-gray-800 px-8 py-4 text-lg bg-transparent"
+                        onClick={() => window.open("https://discord.gg/cHYTkWcFCQ", "_blank")}
                       >
                         <Globe className="w-5 h-5 mr-2" />
                         Discord
@@ -392,11 +393,10 @@ export default function MinecraftServer() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-                    <StatCard icon={<Users className="w-6 h-6" />} value="3,247" label="Aktywni gracze" />
-                    <StatCard icon={<Zap className="w-6 h-6" />} value="99.9%" label="Uptime" />
-                    <StatCard icon={<Trophy className="w-6 h-6" />} value="6 lat" label="Doświadczenia" />
-                    <StatCard icon={<Heart className="w-6 h-6" />} value="50k+" label="Społeczność" />
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                    <StatCard icon={<Users className="w-6 h-6" />} value="3,247" label="Aktywni na Discord" />
+                    <StatCard icon={<Trophy className="w-6 h-6" />} value="4 lata" label="Doświadczenia" />
+                    <StatCard icon={<Heart className="w-6 h-6" />} value="50k+" label="Discord Społeczność" />
                   </div>
                 </div>
               </div>
@@ -413,7 +413,11 @@ export default function MinecraftServer() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
-                  <Button size="lg" className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-4 text-lg">
+                  <Button
+                    size="lg"
+                    className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-4 text-lg"
+                    onClick={() => window.open("https://discord.gg/cHYTkWcFCQ", "_blank")}
+                  >
                     <Globe className="w-5 h-5 mr-2" />
                     Discord - 25k członków
                   </Button>
@@ -693,6 +697,7 @@ function HomeContent() {
                   size="lg"
                   variant="outline"
                   className="border-gray-600 text-white hover:bg-gray-800 px-8 py-4 text-lg bg-transparent"
+                  onClick={() => window.open("https://discord.gg/cHYTkWcFCQ", "_blank")}
                 >
                   <Globe className="w-5 h-5 mr-2" />
                   Discord
@@ -700,11 +705,10 @@ function HomeContent() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
-              <StatCard icon={<Users className="w-6 h-6" />} value="3,247" label="Aktywni gracze" />
-              <StatCard icon={<Zap className="w-6 h-6" />} value="99.9%" label="Uptime" />
-              <StatCard icon={<Trophy className="w-6 h-6" />} value="6 lat" label="Doświadczenia" />
-              <StatCard icon={<Heart className="w-6 h-6" />} value="50k+" label="Społeczność" />
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <StatCard icon={<Users className="w-6 h-6" />} value="3,247" label="Aktywni na Discord" />
+              <StatCard icon={<Trophy className="w-6 h-6" />} value="4 lata" label="Doświadczenia" />
+              <StatCard icon={<Heart className="w-6 h-6" />} value="50k+" label="Discord Społeczność" />
             </div>
           </div>
         </div>
@@ -721,7 +725,11 @@ function HomeContent() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center mb-12">
-            <Button size="lg" className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-4 text-lg">
+            <Button
+              size="lg"
+              className="bg-[#5865F2] hover:bg-[#4752C4] text-white px-8 py-4 text-lg"
+              onClick={() => window.open("https://discord.gg/cHYTkWcFCQ", "_blank")}
+            >
               <Globe className="w-5 h-5 mr-2" />
               Discord - 25k członków
             </Button>
@@ -1783,10 +1791,6 @@ function ServerStatsGrid() {
 
   return (
     <div className="grid grid-cols-2 gap-4">
-      <div className="bg-gray-800/50 rounded-lg p-4 text-center">
-        <div className="text-2xl font-bold text-green-400">{loading ? "..." : status.online ? "99.9%" : "0%"}</div>
-        <div className="text-gray-400 text-sm">Uptime</div>
-      </div>
       <div className="bg-gray-800/50 rounded-lg p-4 text-center">
         <div className="text-2xl font-bold text-blue-400">{loading ? "..." : `${status.ping}ms`}</div>
         <div className="text-gray-400 text-sm">Ping</div>
