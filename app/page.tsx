@@ -33,8 +33,16 @@ import {
 } from "lucide-react"
 import { useState, useEffect } from "react"
 
+interface ServerData {
+  online: boolean
+  players: { online: number; max: number }
+  version: string
+  motd: string
+  ping: number
+}
+
 function useServerStatus() {
-  const [status, setStatus] = useState({
+  const [status, setStatus] = useState<ServerData>({
     online: true,
     players: { online: 1847, max: 2000 },
     version: "1.20.1",
@@ -183,8 +191,53 @@ function RuleCard({
   )
 }
 
-export default function MinecraftServer() {
+export default function MinecraftServerPage() {
   const [activeTab, setActiveTab] = useState("home")
+  const [serverData, setServerData] = useState<ServerData | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [showAdminLogin, setShowAdminLogin] = useState(false)
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false)
+  const [adminCredentials, setAdminCredentials] = useState({ username: "", password: "" })
+  const [selectedApplication, setSelectedApplication] = useState<"trial-support" | "media">("trial-support")
+  const [discordValidation, setDiscordValidation] = useState<{
+    isValid: boolean | null
+    userData: any
+    isLoading: boolean
+    error: string | null
+  }>({ isValid: null, userData: null, isLoading: false, error: null })
+  const [selectedRank, setSelectedRank] = useState<string | null>(null)
+  const [displayedTitle, setDisplayedTitle] = useState("")
+  const [isTyping, setIsTyping] = useState(true)
+
+  const fullTitle = "StoneMC"
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout
+
+    const typeWriter = () => {
+      if (isTyping) {
+        if (displayedTitle.length < fullTitle.length) {
+          setDisplayedTitle(fullTitle.slice(0, displayedTitle.length + 1))
+          timeoutId = setTimeout(typeWriter, 500)
+        } else {
+          // Wait 3 seconds then start erasing
+          timeoutId = setTimeout(() => {
+            setIsTyping(false)
+            setDisplayedTitle("")
+          }, 3000)
+        }
+      } else {
+        // Start typing again
+        setIsTyping(true)
+        timeoutId = setTimeout(typeWriter, 500)
+      }
+    }
+
+    timeoutId = setTimeout(typeWriter, 500)
+
+    return () => clearTimeout(timeoutId)
+  }, [displayedTitle, isTyping, fullTitle])
+
   const [applicationType, setApplicationType] = useState("")
   const [formData, setFormData] = useState({
     nickname: "",
@@ -198,15 +251,12 @@ export default function MinecraftServer() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitStatus, setSubmitStatus] = useState("")
-  const [discordValidation, setDiscordValidation] = useState({
+  const [discordValidationOld, setDiscordValidationOld] = useState({
     isValidating: false,
     isValid: false,
     userInfo: null,
     error: "",
   })
-  const [showAdminLogin, setShowAdminLogin] = useState(false)
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false)
-  const [adminCredentials, setAdminCredentials] = useState({ username: "", password: "" })
   const [adminData, setAdminData] = useState({
     players: [
       { id: 1, name: "Player1", status: "online", lastSeen: "Teraz", ip: "192.168.1.1" },
@@ -225,7 +275,7 @@ export default function MinecraftServer() {
     }))
 
     if (name === "discordId") {
-      setDiscordValidation({
+      setDiscordValidationOld({
         isValidating: false,
         isValid: false,
         userInfo: null,
@@ -236,7 +286,7 @@ export default function MinecraftServer() {
 
   const validateDiscordId = async (discordId) => {
     if (!discordId || discordId.length < 17 || discordId.length > 19) {
-      setDiscordValidation({
+      setDiscordValidationOld({
         isValidating: false,
         isValid: false,
         userInfo: null,
@@ -245,7 +295,7 @@ export default function MinecraftServer() {
       return
     }
 
-    setDiscordValidation((prev) => ({ ...prev, isValidating: true, error: "" }))
+    setDiscordValidationOld((prev) => ({ ...prev, isValidating: true, error: "" }))
 
     try {
       // Using Discord's public API endpoint
@@ -261,7 +311,7 @@ export default function MinecraftServer() {
           ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png?size=64`
           : `https://cdn.discordapp.com/embed/avatars/${userData.discriminator % 5}.png`
 
-        setDiscordValidation({
+        setDiscordValidationOld({
           isValidating: false,
           isValid: true,
           userInfo: {
@@ -273,7 +323,7 @@ export default function MinecraftServer() {
           error: "",
         })
       } else {
-        setDiscordValidation({
+        setDiscordValidationOld({
           isValidating: false,
           isValid: false,
           userInfo: null,
@@ -281,7 +331,7 @@ export default function MinecraftServer() {
         })
       }
     } catch (error) {
-      setDiscordValidation({
+      setDiscordValidationOld({
         isValidating: false,
         isValid: false,
         userInfo: null,
@@ -564,8 +614,8 @@ export default function MinecraftServer() {
             submitStatus={submitStatus}
             setSubmitStatus={setSubmitStatus}
             handleInputChange={handleInputChange}
-            discordValidation={discordValidation}
-            setDiscordValidation={setDiscordValidation}
+            discordValidation={discordValidationOld}
+            setDiscordValidation={setDiscordValidationOld}
             validateDiscordId={validateDiscordId}
             handleDiscordIdChange={handleDiscordIdChange}
           />
@@ -586,7 +636,10 @@ export default function MinecraftServer() {
             <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center">
               <Crown className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xl font-bold">StoneMC</span>
+            <span className="text-xl font-bold min-w-[100px]">
+              {displayedTitle}
+              <span className="animate-pulse">|</span>
+            </span>
           </div>
           <nav className="hidden md:flex items-center space-x-8">
             <a
@@ -694,7 +747,10 @@ export default function MinecraftServer() {
                 <Crown className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h4 className="text-white font-bold">StoneMC</h4>
+                <h4 className="text-white font-bold min-w-[80px]">
+                  {displayedTitle}
+                  <span className="animate-pulse">|</span>
+                </h4>
                 <p className="text-gray-400 text-sm">Premium Minecraft Server</p>
               </div>
             </div>
