@@ -29,6 +29,7 @@ import {
   RefreshCw,
   Save,
   Database,
+  MessageCircle,
 } from "lucide-react"
 import { useState, useEffect } from "react"
 
@@ -63,6 +64,123 @@ function useServerStatus() {
   }, [])
 
   return { status, loading }
+}
+
+function ServerStatus() {
+  const { status, loading } = useServerStatus()
+
+  return (
+    <div className="flex items-center gap-4">
+      <div className="text-white font-bold text-xl">
+        {loading ? "Ładowanie..." : `${status.players.online} / ${status.players.max}`}
+      </div>
+      <div className="text-gray-400">Graczy Online</div>
+    </div>
+  )
+}
+
+function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
+  return (
+    <div className="bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 text-center">
+      <div className="text-4xl font-bold text-white mb-2">{value}</div>
+      <div className="text-gray-400 flex items-center justify-center gap-2">
+        {icon}
+        {label}
+      </div>
+    </div>
+  )
+}
+
+function FeatureCard({
+  icon,
+  title,
+  description,
+  highlight,
+}: { icon: React.ReactNode; title: string; description: string; highlight?: boolean }) {
+  return (
+    <div
+      className={`bg-gray-900/50 backdrop-blur-sm rounded-xl p-6 border ${
+        highlight ? "border-blue-500" : "border-gray-700"
+      } hover:border-blue-500 transition-colors duration-300`}
+    >
+      <div className="text-3xl text-blue-400 mb-4">{icon}</div>
+      <h4 className="text-2xl font-bold text-white mb-2">{title}</h4>
+      <p className="text-gray-400">{description}</p>
+    </div>
+  )
+}
+
+function ServerAddress() {
+  const [isCopied, setIsCopied] = useState(false)
+  const serverAddress = "stonemc.pl"
+
+  const handleCopyClick = async () => {
+    try {
+      await navigator.clipboard.writeText(serverAddress)
+      setIsCopied(true)
+      setTimeout(() => setIsCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy text: ", err)
+    }
+  }
+
+  return (
+    <div className="flex items-center justify-between bg-gray-800/50 rounded-lg p-4">
+      <span className="text-white font-semibold">{serverAddress}</span>
+      <Button variant="outline" onClick={handleCopyClick} disabled={isCopied}>
+        {isCopied ? (
+          <>
+            <CheckCircle className="w-4 h-4 mr-2" />
+            Skopiowano!
+          </>
+        ) : (
+          <>
+            <Copy className="w-4 h-4 mr-2" />
+            Kopiuj
+          </>
+        )}
+      </Button>
+    </div>
+  )
+}
+
+function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
+  return (
+    <div className="text-center">
+      <div className="w-12 h-12 rounded-full bg-blue-500 text-white font-bold text-2xl flex items-center justify-center mx-auto mb-4">
+        {step}
+      </div>
+      <h5 className="text-xl font-bold text-white mb-2">{title}</h5>
+      <p className="text-gray-400">{description}</p>
+    </div>
+  )
+}
+
+function RuleCard({
+  number,
+  title,
+  description,
+  severity,
+}: { number: string; title: string; description: string; severity: "high" | "medium" | "low" }) {
+  const severityColors = {
+    high: "bg-red-800 text-red-200 border-red-600",
+    medium: "bg-yellow-800 text-yellow-200 border-yellow-600",
+    low: "bg-green-800 text-green-200 border-green-600",
+  }
+
+  return (
+    <Card className="bg-gray-900/50 border-gray-700 backdrop-blur-sm">
+      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+        <CardTitle className="text-sm font-medium text-white flex items-center">
+          <Badge className={severityColors[severity]}>{number}</Badge>
+          <span className="ml-2">{title}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-400">{description}</p>
+      </CardContent>
+    </Card>
+  )
 }
 
 export default function MinecraftServer() {
@@ -899,6 +1017,8 @@ function RulesContent() {
 }
 
 function ShopContent() {
+  const [selectedRank, setSelectedRank] = useState<string | null>(null)
+
   return (
     <section className="py-24 bg-gradient-to-b from-gray-900/20 to-black">
       <div className="container mx-auto px-4">
@@ -931,6 +1051,7 @@ function ShopContent() {
                   "Ekskluzywne komendy",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("VIP - 7 dni")}
               />
               <ShopCard
                 title="VIP - 30 dni"
@@ -944,10 +1065,11 @@ function ShopContent() {
                   "Ekskluzywne komendy",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("VIP - 30 dni")}
               />
               <ShopCard
                 title="VIP - Lifetime"
-                price="70 PLN"
+                price="50 PLN"
                 period="na zawsze"
                 features={[
                   "Kolorowy nick",
@@ -957,6 +1079,7 @@ function ShopContent() {
                   "Ekskluzywne komendy",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("VIP - Lifetime")}
               />
             </div>
 
@@ -974,6 +1097,7 @@ function ShopContent() {
                   "Ekskluzywne skiny",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("SVIP - 7 dni")}
               />
               <ShopCard
                 title="SVIP - 30 dni"
@@ -987,10 +1111,11 @@ function ShopContent() {
                   "Ekskluzywne skiny",
                 ]}
                 popular={true}
+                onClick={() => setSelectedRank("SVIP - 30 dni")}
               />
               <ShopCard
                 title="SVIP - Lifetime"
-                price="140 PLN"
+                price="100 PLN"
                 period="na zawsze"
                 features={[
                   "Wszystko z SVIP",
@@ -1000,6 +1125,7 @@ function ShopContent() {
                   "Priorytetowa pomoc",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("SVIP - Lifetime")}
               />
             </div>
 
@@ -1017,6 +1143,7 @@ function ShopContent() {
                   "Priorytetowa pomoc",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("MVIP - 7 dni")}
               />
               <ShopCard
                 title="MVIP - 30 dni"
@@ -1030,10 +1157,11 @@ function ShopContent() {
                   "Priorytetowa pomoc",
                 ]}
                 popular={true}
+                onClick={() => setSelectedRank("MVIP - 30 dni")}
               />
               <ShopCard
                 title="MVIP - Lifetime"
-                price="245 PLN"
+                price="150 PLN"
                 period="na zawsze"
                 features={[
                   "Wszystko z SVIP",
@@ -1044,6 +1172,7 @@ function ShopContent() {
                   "Priorytet we wszystkim",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("MVIP - Lifetime")}
               />
             </div>
 
@@ -1062,6 +1191,7 @@ function ShopContent() {
                   "Priorytet we wszystkim",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("STONE - 7 dni")}
               />
               <ShopCard
                 title="STONE - 30 dni"
@@ -1076,6 +1206,7 @@ function ShopContent() {
                   "Priorytet we wszystkim",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("STONE - 30 dni")}
               />
               <ShopCard
                 title="STONE - Lifetime"
@@ -1090,6 +1221,7 @@ function ShopContent() {
                   "Priorytet we wszystkim",
                 ]}
                 popular={false}
+                onClick={() => setSelectedRank("STONE - Lifetime")}
               />
             </div>
           </div>
@@ -1106,6 +1238,7 @@ function ShopContent() {
                 { name: "Klucz Zwykły", amount: 5 },
                 { name: "Klucz Rzadki", amount: 2 },
               ]}
+              onClick={() => setSelectedRank("Paczka Podstawowa")}
             />
             <KeyPackCard
               title="Paczka Premium"
@@ -1116,6 +1249,7 @@ function ShopContent() {
                 { name: "Klucz Epicki", amount: 2 },
               ]}
               popular={true}
+              onClick={() => setSelectedRank("Paczka Premium")}
             />
             <KeyPackCard
               title="Paczka Legendarna"
@@ -1125,9 +1259,59 @@ function ShopContent() {
                 { name: "Klucz Epicki", amount: 5 },
                 { name: "Klucz Legendarny", amount: 1 },
               ]}
+              onClick={() => setSelectedRank("Paczka Legendarna")}
             />
           </div>
         </div>
+
+        {selectedRank && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <Card className="bg-gray-900 border-gray-700 max-w-md w-full">
+              <CardHeader>
+                <CardTitle className="text-white text-xl flex items-center justify-between">
+                  <span>Zakup: {selectedRank}</span>
+                  <button onClick={() => setSelectedRank(null)} className="text-gray-400 hover:text-white">
+                    ✕
+                  </button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="bg-gray-800 p-4 rounded-lg">
+                  <h4 className="text-white font-semibold mb-2 flex items-center">
+                    <MessageCircle className="w-5 h-5 mr-2 text-blue-400" />
+                    Jak zakupić?
+                  </h4>
+                  <p className="text-gray-300 text-sm mb-3">
+                    Aby zakupić rangę, skontaktuj się z nami jednym z poniższych sposobów:
+                  </p>
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => window.open("https://discord.gg/cHYTkWcFCQ", "_blank")}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center transition-colors"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Stwórz ticket na Discord
+                    </button>
+                    <div className="bg-gray-700 p-3 rounded-lg">
+                      <p className="text-gray-300 text-sm">
+                        <strong className="text-white">Lub napisz bezpośrednio do:</strong>
+                      </p>
+                      <p className="text-blue-400 font-mono">big_maciej</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center">
+                  <button
+                    onClick={() => setSelectedRank(null)}
+                    className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-6 rounded-lg transition-colors"
+                  >
+                    Zamknij
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="mt-16 text-center">
           <Card className="bg-gray-900/50 border-gray-700 backdrop-blur-sm max-w-2xl mx-auto">
@@ -1150,154 +1334,18 @@ function ShopContent() {
   )
 }
 
-function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string; label: string }) {
-  return (
-    <Card className="bg-gray-900/30 border-gray-700 backdrop-blur-sm hover:bg-gray-900/50 transition-all">
-      <CardContent className="p-6 text-center">
-        <div className="text-gray-400 mb-3 flex justify-center">{icon}</div>
-        <div className="text-3xl font-bold text-white mb-1">{value}</div>
-        <div className="text-gray-300 text-sm font-medium">{label}</div>
-      </CardContent>
-    </Card>
-  )
-}
-
-function FeatureCard({
-  icon,
-  title,
-  description,
-  highlight = false,
-}: {
-  icon: React.ReactNode
-  title: string
-  description: string
-  highlight?: boolean
-}) {
-  return (
-    <Card
-      className={`${
-        highlight
-          ? "bg-gradient-to-br from-gray-800/50 to-gray-900/50 border-gray-600"
-          : "bg-gray-900/30 border-gray-700"
-      } backdrop-blur-sm hover:bg-gray-800/50 transition-all group`}
-    >
-      <CardHeader>
-        <div className={`${highlight ? "text-white" : "text-gray-400"} mb-3 group-hover:text-white transition-colors`}>
-          {icon}
-        </div>
-        <CardTitle className="text-white text-xl">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-300 leading-relaxed">{description}</p>
-      </CardContent>
-    </Card>
-  )
-}
-
-function ServerStatus() {
-  const { status, loading } = useServerStatus()
-
-  return (
-    <div className="flex items-center space-x-3 bg-gray-900/50 px-6 py-3 rounded-full border border-gray-700 backdrop-blur-sm">
-      <div className={`w-3 h-3 rounded-full ${status.online ? "bg-green-400 animate-pulse" : "bg-red-400"}`}></div>
-      <span className="text-white font-semibold text-lg">
-        {loading ? "Sprawdzanie..." : status.online ? "Online" : "Offline"}
-      </span>
-      <span className="text-gray-300">•</span>
-      <span className="text-gray-300 font-medium">{loading ? "..." : `${status.players.online} graczy`}</span>
-    </div>
-  )
-}
-
-function ServerAddress() {
-  const [copied, setCopied] = useState(false)
-  const serverIP = "play.stonemc.pl"
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(serverIP)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
-
-  return (
-    <div className="flex items-center space-x-4 bg-black/50 p-6 rounded-xl border border-gray-700">
-      <code className="text-white font-mono text-2xl flex-1 font-bold">{serverIP}</code>
-      <Button
-        onClick={copyToClipboard}
-        size="lg"
-        className={`${
-          copied ? "bg-green-600 hover:bg-green-700" : "bg-white hover:bg-gray-200"
-        } text-black font-semibold px-6`}
-      >
-        {copied ? <CheckCircle className="w-5 h-5 mr-2" /> : <Copy className="w-5 h-5 mr-2" />}
-        {copied ? "Skopiowano!" : "Kopiuj"}
-      </Button>
-    </div>
-  )
-}
-
-function StepCard({ step, title, description }: { step: string; title: string; description: string }) {
-  return (
-    <div className="text-center p-6 bg-gray-800/30 rounded-xl border border-gray-700">
-      <div className="w-12 h-12 bg-white text-black rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-        {step}
-      </div>
-      <h4 className="text-white font-semibold text-lg mb-2">{title}</h4>
-      <p className="text-gray-300">{description}</p>
-    </div>
-  )
-}
-
-function RuleCard({
-  number,
-  title,
-  description,
-  severity,
-}: { number: string; title: string; description: string; severity: "high" | "medium" | "low" }) {
-  const severityColors = {
-    high: "border-red-600 bg-red-900/20",
-    medium: "border-yellow-600 bg-yellow-900/20",
-    low: "border-blue-600 bg-blue-900/20",
-  }
-
-  const severityBadges = {
-    high: "bg-red-900 text-red-200 border-red-700",
-    medium: "bg-yellow-900 text-yellow-200 border-yellow-700",
-    low: "bg-blue-900 text-blue-200 border-blue-700",
-  }
-
-  return (
-    <Card className={`${severityColors[severity]} border backdrop-blur-sm`}>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-white text-xl flex items-center">
-            <span className="w-8 h-8 bg-white text-black rounded-full flex items-center justify-center text-sm font-bold mr-3">
-              {number}
-            </span>
-            {title}
-          </CardTitle>
-          <Badge className={severityBadges[severity]}>
-            {severity === "high" ? "Wysoka kara" : severity === "medium" ? "Średnia kara" : "Niska kara"}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-gray-300 leading-relaxed">{description}</p>
-      </CardContent>
-    </Card>
-  )
-}
-
 function ShopCard({
   title,
   price,
   period,
   features,
   popular,
-}: { title: string; price: string; period: string; features: string[]; popular: boolean }) {
+  onClick,
+}: { title: string; price: string; period: string; features: string[]; popular: boolean; onClick?: () => void }) {
   return (
     <Card
-      className={`${popular ? "border-green-600 bg-green-900/20" : "bg-gray-900/30 border-gray-700"} backdrop-blur-sm hover:bg-gray-800/50 transition-all relative`}
+      className={`${popular ? "border-green-600 bg-green-900/20" : "bg-gray-900/30 border-gray-700"} backdrop-blur-sm hover:bg-gray-800/50 transition-all relative cursor-pointer`}
+      onClick={onClick}
     >
       {popular && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -1318,6 +1366,9 @@ function ShopCard({
             </li>
           ))}
         </ul>
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <p className="text-gray-400 text-sm text-center">Kliknij aby zobaczyć opcje zakupu</p>
+        </div>
       </CardContent>
     </Card>
   )
@@ -1328,15 +1379,18 @@ function KeyPackCard({
   price,
   keys,
   popular = false,
+  onClick,
 }: {
   title: string
   price: string
   keys: { name: string; amount: number }[]
   popular?: boolean
+  onClick?: () => void
 }) {
   return (
     <Card
-      className={`${popular ? "border-yellow-600 bg-yellow-900/20" : "bg-gray-900/30 border-gray-700"} backdrop-blur-sm hover:bg-gray-800/50 transition-all relative`}
+      className={`${popular ? "border-yellow-600 bg-yellow-900/20" : "bg-gray-900/30 border-gray-700"} backdrop-blur-sm hover:bg-gray-800/50 transition-all relative cursor-pointer`}
+      onClick={onClick}
     >
       {popular && (
         <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
@@ -1359,6 +1413,9 @@ function KeyPackCard({
             </li>
           ))}
         </ul>
+        <div className="mt-4 pt-4 border-t border-gray-700">
+          <p className="text-gray-400 text-sm text-center">Kliknij aby zobaczyć opcje zakupu</p>
+        </div>
       </CardContent>
     </Card>
   )
